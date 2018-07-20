@@ -16,8 +16,8 @@ A BioRuby-based bioinformatics course (still under-development - not recommended
 
 ## 3 ways to run this course:
 
-~~1)  Binder is a way to interact with the Jupyter notebooks inside of this repository - try it!  
-[![Binder](http://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/CBGP-UPM-INIA-PUBLIC/Bioinfo_ProgrammingChallenges/master)
+** CURRENTLY DISABLED ** 1)  Binder is a way to interact with the Jupyter notebooks inside of this repository - try it!  
+[![Binder](http:  //mybinder.org/badge.svg)](https:  //mybinder.org/v2/gh/CBGP-UPM-INIA-PUBLIC/Bioinfo_ProgrammingChallenges/master)
 
 2)  If you use Docker, you can <code>docker pull</code>, and then <code>docker run</code> this course as a Docker image as follows:
 
