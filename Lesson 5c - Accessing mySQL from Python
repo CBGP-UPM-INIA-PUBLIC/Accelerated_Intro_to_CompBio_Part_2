@@ -1,0 +1,399 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Using SQL Databases in Python\n",
+    "\n",
+    "You can, of course, access databases from your code, not just from Jupyter or the command line.\n",
+    "\n",
+    "We will first create a database, and then access it using a Python SQL library.\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%load_ext sql\n",
+    "#%config SqlMagic.autocommit=False\n",
+    "%sql mysql+pymysql://root:root@127.0.0.1:3306/mysql"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%sql show databases;"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# if you have the germplasm database, please drop it now!\n",
+    "# if not, then move to the next box\n",
+    "\n",
+    "%sql drop database germplasm"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%sql create database germplasm;\n",
+    "%sql show databases"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%sql use germplasm;"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#%sql drop table stock\n",
+    "#%sql drop table germplasm\n",
+    "#%sql drop table gene\n",
+    "%sql CREATE TABLE stock(id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, amount FLOAT NOT NULL, date DATE NOT NULL, location VARCHAR(20) NOT NULL);\n",
+    "%sql DESCRIBE stock\n",
+    "%sql CREATE TABLE germplasm(id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, taxonid INTEGER NOT NULL, allele VARCHAR(10) NOT NULL, gene_id INTEGER NOT NULL, stock_id INTEGER NOT NULL);\n",
+    "%sql DESCRIBE germplasm\n",
+    "%sql CREATE TABLE gene(id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, gene VARCHAR(10) NOT NULL, gene_name VARCHAR(30) NOT NULL, embl VARCHAR(70) NOT NULL);\n",
+    "%sql DESCRIBE gene\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%sql INSERT INTO stock(id, amount, date, location) VALUES (1, 5, '2013-05-10', 'Room 2234');\n",
+    "%sql INSERT INTO stock(id, amount, date, location) VALUES (2, 9.8, '2015-1-12', 'Room 998');\n",
+    "\n",
+    "%sql INSERT INTO germplasm (taxonid, allele, gene_id, stock_id) VALUES (4150, 'def-1', 1, 1 );\n",
+    "%sql INSERT INTO germplasm (taxonid, allele, gene_id, stock_id) VALUES (3701, 'ap3', 2, 2 );\n",
+    "%sql INSERT INTO germplasm (taxonid, allele, gene_id, stock_id) VALUES (3701, 'ag', 3, 2 );\n",
+    "\n",
+    "%sql INSERT INTO gene (id, gene, gene_name, embl) VALUES (1, 'DEF', \"Deficiens\", 'https://www.ebi.ac.uk/ena/data/view/AB516402');\n",
+    "%sql INSERT INTO gene (id, gene, gene_name, embl) VALUES (2, 'AP3', \"Apetala3\", 'https://www.ebi.ac.uk/ena/data/view/AF056541');\n",
+    "%sql INSERT INTO gene (id, gene, gene_name, embl) VALUES (3, 'AG', \"Agamous\", 'https://www.ebi.ac.uk/ena/data/view/AL161549');\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<pre>\n",
+    "\n",
+    "\n",
+    "</pre>\n",
+    "\n",
+    "## Our germplasm database is now set up.\n",
+    "\n",
+    "The data structure is approximately the same as the final data structure yesterday:\n",
+    "\n",
+    "**Stock table**\n",
+    "\n",
+    "**Gene table**\n",
+    "\n",
+    "**Germplasm table** linked to **Stock table** (many-to-one) (several germplasms point to same stock)\n",
+    "**Germplasm table** linked to **Gene table** (one-to-one) (every germplasm points to one gene)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pymysql.cursors\n",
+    "\n",
+    "# Connect to the database\n",
+    "connection = pymysql.connect(host='localhost',\n",
+    "                             user='root',\n",
+    "                             password='root',\n",
+    "                             db='germplasm',\n",
+    "                             charset='utf8mb4',  # note utf8... this is important for unusual characters!\n",
+    "                             cursorclass=pymysql.cursors.DictCursor)\n",
+    "\n",
+    "try:\n",
+    "    with connection.cursor() as cursor:\n",
+    "        # Read a single record\n",
+    "        sql = \"SELECT * FROM stock\"\n",
+    "        cursor.execute(sql)\n",
+    "        results = cursor.fetchall()\n",
+    "        print(results)\n",
+    "        print(\"\")\n",
+    "        for result in results:\n",
+    "            print(result['amount'],\" is located in \",result['location'])\n",
+    "finally:\n",
+    "    print(\"\")\n",
+    "    connection.close()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Open a new jupyter notebook to Lesson 3  - mySQL section\n",
+    "\n",
+    "Try some of the SELECT queries we learned in that lesson.  "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# try queries here"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "<pre>\n",
+    "\n",
+    "\n",
+    "</pre>\n",
+    "## You can issue ANY mysql command in this way\n",
+    "\n",
+    "Including _create database_, _create table_,  and  _insert_ data commands.\n",
+    "\n",
+    "For example:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "connection = pymysql.connect(host='localhost',\n",
+    "                             user='root',\n",
+    "                             password='root',\n",
+    "                             db='germplasm',\n",
+    "                             charset='utf8mb4',  # note utf8... this is important for unusual characters!\n",
+    "                             cursorclass=pymysql.cursors.DictCursor)\n",
+    "\n",
+    "try:\n",
+    "    with connection.cursor() as cursor:\n",
+    "        # Read a single record\n",
+    "        sql = \"create database testing123\"\n",
+    "        cursor.execute(sql)\n",
+    "finally:\n",
+    "    print(\"\")\n",
+    "    connection.close()\n",
+    "\n",
+    "\n",
+    "%sql show databases\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "connection = pymysql.connect(host='localhost',\n",
+    "                             user='root',\n",
+    "                             password='root',\n",
+    "# PAY ATTENTION HERE!!!!!!!!!!!!!!!\n",
+    "                             db='testing123',\n",
+    "                             charset='utf8mb4',  # note utf8... this is important for unusual characters!\n",
+    "                             cursorclass=pymysql.cursors.DictCursor)\n",
+    "\n",
+    "try:\n",
+    "    with connection.cursor() as cursor:\n",
+    "        # Read a single record\n",
+    "        sql = \"create table test1(id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, data1 VARCHAR(20) NOT NULL )\"\n",
+    "        cursor.execute(sql)\n",
+    "        sql = \"create table test2(id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, otherdata VARCHAR(20) NOT NULL )\"\n",
+    "        cursor.execute(sql)\n",
+    "finally:\n",
+    "    print(\"\")\n",
+    "    connection.close()\n",
+    "\n",
+    "\n",
+    "%sql use testing123\n",
+    "#%sql show tables\n",
+    "#%sql desc test1\n",
+    "%sql desc test2\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%sql show databases"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Insert a new record into the Germplasm database\n",
+    "\n",
+    "First, look at the schemas:\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%sql use germplasm\n",
+    "%sql desc gene"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%sql desc stock"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%sql desc germplasm"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## test data to show how to retrieve the latest unique ID number:\n",
+    "\n",
+    "**Gene**:  gene=TEST, gene_name=testing, embl=http://TESTTEST\n",
+    "\n",
+    "(Remember the SQL \"last_insert_id()\" function!!)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "connection = pymysql.connect(host='localhost',\n",
+    "                             user='root',\n",
+    "                             password='root',\n",
+    "# PAY ATTENTION HERE!!!!!!!!!!!!!!!\n",
+    "                             db='germplasm',\n",
+    "                             charset='utf8mb4',  # note utf8... this is important for unusual characters!\n",
+    "                             cursorclass=pymysql.cursors.DictCursor)\n",
+    "\n",
+    "try:\n",
+    "    with connection.cursor() as cursor:\n",
+    "        # Read a single record\n",
+    "        sql = \"INSERT INTO gene (gene, gene_name, embl) VALUES ('TEST', 'testing', 'https://TESTTEST')\"\n",
+    "        cursor.execute(sql)\n",
+    "        sql = \"SELECT last_insert_id()\"\n",
+    "        cursor.execute(sql)\n",
+    "        results = cursor.fetchall()\n",
+    "        print(results)\n",
+    "        gene_id = results[0]['last_insert_id()']# note that results is a LIST, so we need to take element 0 first\n",
+    "        print(\"The unique ID for the last gene entered was {}\".format(gene_id))\n",
+    "\n",
+    "finally:\n",
+    "    print(\"\")\n",
+    "    connection.close()\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## new data:\n",
+    "\n",
+    "**Gene**:  gene=WUS, gene_name=wuschel, embl=http://ABC123\n",
+    "\n",
+    "**Stock**: amount=10, date=12/09/2018, location=Room990\n",
+    "\n",
+    "**Germplasm**:  taxonid=3701, allele=wus-1, **gene_id=??, stock_id=??**\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "connection = pymysql.connect(host='localhost',\n",
+    "                             user='root',\n",
+    "                             password='root',\n",
+    "                             db='germplasm',\n",
+    "                             charset='utf8mb4',  # note utf8... this is important for unusual characters!\n",
+    "                             cursorclass=pymysql.cursors.DictCursor)\n",
+    "\n",
+    "try:\n",
+    "    with connection.cursor() as cursor:\n",
+    "        \n",
+    "        # you will need to create 3 INSERT INTO statements\n",
+    "        # you will need to capture the unique ID from two \n",
+    "        # of those to create the germplasm entry\n",
+    "        sql = \"\"\n",
+    "\n",
+    "        \n",
+    "finally:\n",
+    "    print(\"\")\n",
+    "    connection.close()\n",
+    "\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
